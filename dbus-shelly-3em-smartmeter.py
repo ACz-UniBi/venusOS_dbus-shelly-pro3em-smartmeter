@@ -28,7 +28,7 @@ class DbusShelly3emService:
     deviceinstance = int(config['DEFAULT']['DeviceInstance'])
     customname = config['DEFAULT']['CustomName']
     role = config['DEFAULT']['Role']
-    proSupport = config['DEFAULT']['proSupport']
+    proSupport = config['DEFAULT']['ShellySupport']
 
     allowed_roles = ['pvinverter','grid']
     if role in allowed_roles:
@@ -84,9 +84,9 @@ class DbusShelly3emService:
   def _getShellySerial(self):
     config = self._getConfig()                                                  
     meter_data = self._getShellyData()  
-    proSupport = config['DEFAULT']['proSupport']
+    shellySupport = config['DEFAULT']['ShellySupport']
    
-    if proSupport == 'True':                                                                                                                                              
+    if shellySupport == 'Gen2':
         serial = meter_data['sys']['mac']                                                                                                                                 
     else:   
         if not meter_data['mac']:
@@ -127,9 +127,9 @@ class DbusShelly3emService:
   def _getShellyStatusUrl(self):
     config = self._getConfig()
     accessType = config['DEFAULT']['AccessType']
-    proSupport = str(config['DEFAULT']['proSupport'])                                                     
+    shellySupport = str(config['DEFAULT']['ShellySupport'])
     
-    if accessType == 'OnPremise' and proSupport == 'True':
+    if accessType == 'OnPremise' and shellySupport == 'Gen2':
         URL = "http://%s/rpc/Shelly.GetStatus" % (config['ONPREMISE']['Host'])
         URL = URL.replace(":@", "")
     elif accessType == 'OnPremise': 
@@ -182,9 +182,9 @@ class DbusShelly3emService:
         meter_data['emeters'][0] = meter_data['emeters'][remapL1-1]
         meter_data['emeters'][remapL1-1] = old_l1
        
-      proSupport = str(config['DEFAULT']['proSupport'])
-      if proSupport == 'True':
-
+      shellySupport = str(config['DEFAULT']['ShellySupport'])
+      if shellySupport == 'Gen2':
+        # Gen2 support: Shelly Plus and Pro devices
         self._dbusservice['/Ac/Power'] = meter_data['em:0']['total_act_power']
         self._dbusservice['/Ac/L1/Voltage'] = meter_data['em:0']['a_voltage']
         self._dbusservice['/Ac/L2/Voltage'] = meter_data['em:0']['b_voltage']
@@ -204,7 +204,7 @@ class DbusShelly3emService:
 
 
       else:
-
+        # Gen1 support
       	#send data to DBus
         self._dbusservice['/Ac/Power'] = meter_data['total_power']
         self._dbusservice['/Ac/L1/Voltage'] = meter_data['emeters'][0]['voltage']
